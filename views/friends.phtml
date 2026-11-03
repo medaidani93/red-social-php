@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Amigos - Red Social</title>
+    <link rel="stylesheet" href="public/css/style.css">
+    <style>
+        .friends-card {
+            background: #ffffff;
+            border: 1px solid #dbdbdb;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .friends-card h3 {
+            margin-bottom: 16px;
+        }
+        .friend-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .friend-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #efefef;
+        }
+        .friend-item:last-child {
+            border-bottom: none;
+        }
+        .friend-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .btn-remove {
+            color: #ed4956;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .btn-remove:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.php?c=post&action=feed" class="nav-logo">📸 RedSocial</a>
+            <nav class="nav-links">
+                <a href="index.php?c=post&action=feed">← Volver al Muro</a>
+                <a href="index.php?c=user&action=search">Buscar amigos</a>
+                <a href="index.php?c=auth&action=logout" class="logout">Salir</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="feed-container">
+        <section class="friends-card">
+            <h3>Mis Amigos (<?= count($friends) ?>)</h3>
+
+            <?php if (empty($friends)): ?>
+                <p style="color: #8e8e8e; font-size: 0.9rem;">Aún no tienes amigos en tu lista. <a href="index.php?c=user&action=search" style="color: #0095f6;">¡Busca usuarios aquí!</a></p>
+            <?php else: ?>
+                <ul class="friend-list">
+                    <?php foreach ($friends as $friend): ?>
+                        <li class="friend-item">
+                            <span class="friend-name">👤 <?= htmlspecialchars($friend['username']) ?></span>
+                            <a href="index.php?c=user&action=removeFriend&id=<?= $friend['id'] ?>" 
+                               class="btn-remove" 
+                               onclick="return confirm('¿Seguro que quieres eliminar a <?= htmlspecialchars($friend['username']) ?> de tus amigos?');">
+                               Eliminar
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+        </section>
+    </main>
+
+</body>
+</html>

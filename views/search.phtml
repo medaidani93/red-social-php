@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscar Amigos - Red Social</title>
+    <link rel="stylesheet" href="public/css/style.css">
+    <style>
+        .search-card {
+            background: #ffffff;
+            border: 1px solid #dbdbdb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .search-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .search-form input[type="text"] {
+            flex: 1;
+            padding: 9px 12px;
+            border: 1px solid #dbdbdb;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .search-form input[type="text"]:focus {
+            border-color: #a8a8a8;
+        }
+        .user-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #efefef;
+        }
+        .user-item:last-child {
+            border-bottom: none;
+        }
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .btn-add {
+            background-color: #0095f6;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .btn-add:hover {
+            background-color: #1877f2;
+        }
+        .already-friend {
+            color: #8e8e8e;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.php?c=post&action=feed" class="nav-logo">📸 RedSocial</a>
+            <nav class="nav-links">
+                <a href="index.php?c=post&action=feed">← Volver al Muro</a>
+                <a href="index.php?c=auth&action=logout" class="logout">Salir</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="feed-container">
+        <section class="search-card">
+            <h3>Buscar Usuarios</h3>
+            <form action="index.php" method="GET" class="search-form">
+                <input type="hidden" name="c" value="user">
+                <input type="hidden" name="action" value="search">
+                <input type="text" name="q" placeholder="Escribe el nombre de usuario..." value="<?= htmlspecialchars($_GET['q'] ?? '') ?>" required>
+                <button type="submit" class="btn-primary">Buscar</button>
+            </form>
+        </section>
+
+        <?php if (isset($_GET['q'])): ?>
+            <section class="search-card">
+                <h4 style="margin-bottom: 15px; color: #8e8e8e; font-weight: 500;">
+                    Resultados para: "<strong><?= htmlspecialchars($_GET['q']) ?></strong>"
+                </h4>
+
+                <?php if (empty($results)): ?>
+                    <p style="color: #8e8e8e; font-size: 0.9rem;">No se encontraron usuarios con ese nombre.</p>
+                <?php else: ?>
+                    <ul class="user-list">
+                        <?php foreach ($results as $u): ?>
+                            <?php $yaEsAmigo = UserRepository::isFriend($_SESSION['user']['id'], $u['id']); ?>
+                            <li class="user-item">
+                                <span class="user-name"><?= htmlspecialchars($u['username']) ?></span>
+                                <?php if ($yaEsAmigo): ?>
+                                    <span class="already-friend">✓ Amigo</span>
+                                <?php else: ?>
+                                    <a href="index.php?c=user&action=addFriend&id=<?= $u['id'] ?>&q=<?= urlencode($_GET['q']) ?>" class="btn-add">Añadir</a>
+                                <?php endif; ?>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+            </section>
+        <?php endif; ?>
+    </main>
+
+</body>
+</html>

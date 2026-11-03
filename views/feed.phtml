@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muro - Red Social</title>
+    <link rel="stylesheet" href="public/css/style.css">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.php?c=post&action=feed" class="nav-logo">📸 RedSocial</a>
+            <nav class="nav-links">
+                <span>Hola, <a href="index.php?c=user&action=profile" style="color: inherit; text-decoration: none;"><strong><?= htmlspecialchars($_SESSION['user']['username'] ?? 'Usuario') ?></strong></a></span>
+                <a href="index.php?c=user&action=profile">Mi perfil</a>
+                <a href="index.php?c=user&action=friends">Mis amigos</a>
+                <a href="index.php?c=user&action=search">Buscar amigos</a>
+                <a href="index.php?c=auth&action=logout" class="logout">Salir</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-layout">
+        
+        <!-- Columna izquierda: Crear post y publicaciones -->
+        <div class="posts-column">
+            
+            <section class="create-post-card">
+                <h3>Crear publicación</h3>
+                <form action="index.php?c=post&action=create" method="POST" enctype="multipart/form-data">
+                    <textarea name="texto" placeholder="¿Qué estás pensando?" required rows="3"></textarea>
+                    <div class="file-input-wrapper">
+                        <input type="file" name="image" accept="image/*" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Publicar</button>
+                </form>
+            </section>
+
+            <?php if (empty($posts)): ?>
+                <p style="text-align: center; color: #8e8e8e;">No hay publicaciones disponibles en tu muro.</p>
+            <?php else: ?>
+                <?php foreach ($posts as $post): ?>
+                    <article class="post-card">
+                        <header class="post-header">
+                            <a href="index.php?c=user&action=profile&id=<?= $post['id_user'] ?>" style="color: inherit; text-decoration: none;" class="post-author">
+                                <?= htmlspecialchars($post['username'] ?? '') ?>
+                            </a>
+                            <span class="post-date"><?= htmlspecialchars(substr($post['fecha'] ?? '', 0, 16)) ?></span>
+                        </header>
+
+                        <?php if (!empty($post['foto'])): ?>
+                            <div class="post-image-container">
+                                <img src="<?= htmlspecialchars($post['foto']) ?>" alt="Publicación" class="post-image">
+                            </div>
+                        <?php endif; ?>
+
+                        <div class="post-content">
+                            <div class="post-actions">
+                                <a href="index.php?c=post&action=like&post_id=<?= $post['id'] ?>" class="like-link <?= !empty($post['user_liked']) ? 'liked' : '' ?>">
+                                    <?= !empty($post['user_liked']) ? '❤️ Ya no me gusta' : '🤍 Me gusta' ?>
+                                    <span>(<?= $post['total_likes'] ?? 0 ?>)</span>
+                                </a>
+                            </div>
+
+                            <div class="post-caption">
+                                <a href="index.php?c=user&action=profile&id=<?= $post['id_user'] ?>" style="color: inherit; text-decoration: none;">
+                                    <strong><?= htmlspecialchars($post['username'] ?? '') ?></strong>
+                                </a>
+                                <span><?= htmlspecialchars($post['texto'] ?? '') ?></span>
+                            </div>
+
+                            <div class="comments-section">
+                                <?php $comentarios = PostRepository::getCommentsByPost($post['id']); ?>
+                                <?php foreach ($comentarios as $c): ?>
+                                    <div class="comment-item">
+                                        <span class="comment-author"><?= htmlspecialchars($c['username']) ?></span>
+                                        <span><?= htmlspecialchars($c['texto']) ?></span>
+                                    </div>
+                                <?php endforeach; ?>
+
+                                <form action="index.php?c=post&action=comment" method="POST" class="comment-form">
+                                    <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
+                                    <input type="text" name="texto" class="comment-input" placeholder="Añade un comentario..." required>
+                                    <button type="submit" class="comment-submit-btn">Publicar</button>
+                                </form>
+                            </div>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
+            <?php endif; ?>
+
+        </div>
+
+        <!-- Columna derecha: Barra de amigos -->
+        <aside class="sidebar-column">
+            <section class="sidebar-card">
+                <div class="sidebar-title">MIS AMIGOS (<?= isset($friends) ? count($friends) : 0 ?>)</div>
+                <?php if (empty($friends)): ?>
+                    <p style="color: #8e8e8e; font-size: 0.85rem;">No tienes amigos agregados.</p>
+                <?php else: ?>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <?php foreach ($friends as $f): ?>
+                            <li class="sidebar-friend-item">
+                                <a href="index.php?c=user&action=profile&id=<?= $f['id'] ?>" style="font-weight: 600; font-size: 0.9rem; color: inherit; text-decoration: none;">
+                                    👤 <?= htmlspecialchars($f['username']) ?>
+                                </a>
+                                <a href="index.php?c=user&action=removeFriend&id=<?= $f['id'] ?>" 
+                                   style="color: #ed4956; font-size: 0.8rem; text-decoration: none;"
+                                   onclick="return confirm('¿Eliminar a <?= htmlspecialchars($f['username']) ?>?');">
+                                   Quitar
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+                <div style="margin-top: 14px; text-align: center;">
+                    <a href="index.php?c=user&action=search" style="color: #0095f6; font-size: 0.85rem; text-decoration: none; font-weight: 600;">+ Buscar nuevos amigos</a>
+                </div>
+            </section>
+        </aside>
+
+    </main>
+
+</body>
+</html>
